@@ -29,22 +29,31 @@ CHUNK_SIZE = 256
 CHUNK_OVERLAP = 40
 ROOT = Path(__file__).parent.resolve()
 
+from newspaper import Article
+from pathlib import Path
+
+from newspaper import Article
+from pathlib import Path
+
 def html_parser_newspaper3k(url):
     article_object = Article(url) 
     article_object.download()   
-  
     article_object.parse()
     text = article_object.text
 
     # Use a sanitized filename based on the URL
-    filename = url.split("://")[-1] + ".txt"
+    filename = url.split("/")[-1] + ".txt"
     file_path = Path("documents") / filename
+
     # Ensure all parent directories exist
     file_path.parent.mkdir(parents=True, exist_ok=True)
-    with open(file_path, "w") as f:
+    
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(text)
 
     return text
+
+
     
 
 def get_embedding(text: str) -> np.ndarray:
@@ -75,7 +84,7 @@ def search_documents(query: str) -> list[str]:
         results = []
         for idx in I[0]:
             data = metadata[idx]
-            results.append(f"{data['chunk']}\n[Source: {data['doc']}, ID: {data['chunk_id']}], ################")
+            results.append(f"{data['chunk']}\n[Source: {data['doc']}, ID: {data['chunk_id']}, URL: {data.get('url', 'N/A')}], ################")
         return results
     except Exception as e:
         return [f"ERROR: Failed to search: {str(e)}"]
@@ -274,7 +283,7 @@ def process_documents():
             for i, chunk in enumerate(tqdm(chunks, desc=f"Embedding {file.name}")):
                 embedding = get_embedding(chunk)
                 embeddings_for_file.append(embedding)
-                new_metadata.append({"doc": file.name, "chunk": chunk, "chunk_id": f"{file.stem}_{i}", "chunk_url": f'https://{file.name}'})
+                new_metadata.append({"doc": file.name, "chunk": chunk, "chunk_id": f"{file.stem}_{i}", "chunk_url":url })
             if embeddings_for_file:
                 if index is None:
                     dim = len(embeddings_for_file[0])

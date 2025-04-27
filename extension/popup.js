@@ -93,6 +93,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const chunksDiv = document.createElement('div');
         chunksDiv.style.marginTop = '15px';
         
+        // Automatically open the URL of the top chunk
+        const topChunk = data.chunks[0];
+        chrome.runtime.sendMessage({
+          action: 'openUrlAndHighlight',
+          url: topChunk.url,
+          text: topChunk.text
+        });
+        
         data.chunks.forEach(chunk => {
           const chunkDiv = document.createElement('div');
           chunkDiv.className = 'text-chunk';
