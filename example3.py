@@ -303,15 +303,6 @@ def ensure_faiss_ready():
 if __name__ == "__main__":
     print("STARTING THE SERVER AT AMAZING LOCATION")
     # url = input("Enter the URL of the article to parse: ")
-
-    # urls = history_fetch()
-    # print(urls)
-
-    # for url_tuple in urls:
-    #     # Extract the URL string from the tuple
-    #     url = url_tuple[0]
-    #     html_parser_newspaper3k(url)
-    
     
     if len(sys.argv) > 1 and sys.argv[1] == "dev":
         mcp.run() # Run without transport for dev server
@@ -324,7 +315,16 @@ if __name__ == "__main__":
         
         # Wait a moment for the server to start
         time.sleep(2)
-        
+
+        # Fetch the history of the browser
+        urls = history_fetch()
+        print(urls)
+
+        for url_tuple in urls:
+            # Extract the URL string from the tuple
+            url = url_tuple[0]
+            html_parser_newspaper3k(url)
+    
         # Process documents after server is running
         process_documents()
         

@@ -60,6 +60,7 @@ async def main(user_input: str):
                             session_id = f"session-{int(time.time())}"
                             query = user_input  # Store original intent
                             step = 0
+                            final_result = None
 
                             while step < max_steps:
                                 log("loop", f"Step {step + 1} started")
@@ -74,7 +75,8 @@ async def main(user_input: str):
                                 log("plan", f"Plan generated: {plan}")
 
                                 if plan.startswith("FINAL_ANSWER:"):
-                                    log("agent", f"✅ FINAL RESULT: {plan}")
+                                    final_result = plan.replace("FINAL_ANSWER:", "").strip()
+                                    log("agent", f"✅ FINAL RESULT: {final_result}")
                                     break
 
                                 try:
@@ -97,14 +99,21 @@ async def main(user_input: str):
                                     break
 
                                 step += 1
+
+                            return final_result or "No result found"
+
                         except Exception as e:
                             print(f"[agent] Session initialization error: {str(e)}")
+                            return f"Error: {str(e)}"
                 except Exception as e:
                     print(f"[agent] Session creation error: {str(e)}")
+                    return f"Error: {str(e)}"
         except Exception as e:
             print(f"[agent] Connection error: {str(e)}")
+            return f"Error: {str(e)}"
     except Exception as e:
         print(f"[agent] Overall error: {str(e)}")
+        return f"Error: {str(e)}"
 
     log("agent", "Agent session complete.")
 
