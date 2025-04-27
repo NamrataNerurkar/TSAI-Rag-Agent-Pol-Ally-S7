@@ -5,7 +5,9 @@
   "description": "A political query assistant that uses your Chrome history",
   "permissions": [
     "history",
-    "storage"
+    "storage",
+    "tabs",
+    "scripting"
   ],
   "action": {
     "default_popup": "popup.html",
@@ -21,6 +23,10 @@
     "128": "icons/icon128.svg"
   },
   "host_permissions": [
-    "http://localhost:8000/*"
-  ]
+    "http://localhost:8000/*",
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  }
 } 

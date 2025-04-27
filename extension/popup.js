@@ -79,7 +79,46 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const data = await response.json();
       console.log('Query response:', data);
-      responseDiv.textContent = data.response;
+      
+      // Clear previous response
+      responseDiv.innerHTML = '';
+      
+      // Display the main response
+      const mainResponse = document.createElement('div');
+      mainResponse.textContent = data.response;
+      responseDiv.appendChild(mainResponse);
+      
+      // Display text chunks with source URLs
+      if (data.chunks && data.chunks.length > 0) {
+        const chunksDiv = document.createElement('div');
+        chunksDiv.style.marginTop = '15px';
+        
+        data.chunks.forEach(chunk => {
+          const chunkDiv = document.createElement('div');
+          chunkDiv.className = 'text-chunk';
+          chunkDiv.textContent = chunk.text;
+          
+          const sourceUrl = document.createElement('div');
+          sourceUrl.className = 'source-url';
+          sourceUrl.textContent = `Source: ${chunk.url}`;
+          
+          chunkDiv.appendChild(sourceUrl);
+          
+          // Add click handler to open URL and highlight text
+          chunkDiv.addEventListener('click', () => {
+            chrome.runtime.sendMessage({
+              action: 'openUrlAndHighlight',
+              url: chunk.url,
+              text: chunk.text
+            });
+          });
+          
+          chunksDiv.appendChild(chunkDiv);
+        });
+        
+        responseDiv.appendChild(chunksDiv);
+      }
+      
       statusDiv.textContent = 'Query processed successfully!';
     } catch (error) {
       console.error('Error during query:', error);

@@ -36,12 +36,12 @@ def html_parser_newspaper3k(url):
     article_object.parse()
     text = article_object.text
 
-    # Create documents directory if it doesn't exist
-    os.makedirs("documents", exist_ok=True)
-    
     # Use a sanitized filename based on the URL
-    filename = url.split("/")[-1] + ".txt"
-    with open(f"documents/{filename}", "w") as f:
+    filename = url.split("://")[-1] + ".txt"
+    file_path = Path("documents") / filename
+    # Ensure all parent directories exist
+    file_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(file_path, "w") as f:
         f.write(text)
 
     return text
@@ -255,9 +255,13 @@ def process_documents():
     converter = MarkItDown()
 
     for file in DOC_PATH.glob("*.*"):
-        fhash = file_hash(file)
-        if file.name in CACHE_META and CACHE_META[file.name] == fhash:
-            mcp_log("SKIP", f"Skipping unchanged file: {file.name}")
+        if file.is_file():
+            fhash = file_hash(file)
+            if file.name in CACHE_META and CACHE_META[file.name] == fhash:
+                mcp_log("SKIP", f"Skipping unchanged file: {file.name}")
+                continue
+        else:
+            mcp_log("SKIP", f"Skipping directory: {file.name}")
             continue
 
         mcp_log("PROC", f"Processing: {file.name}")
@@ -270,7 +274,7 @@ def process_documents():
             for i, chunk in enumerate(tqdm(chunks, desc=f"Embedding {file.name}")):
                 embedding = get_embedding(chunk)
                 embeddings_for_file.append(embedding)
-                new_metadata.append({"doc": file.name, "chunk": chunk, "chunk_id": f"{file.stem}_{i}"})
+                new_metadata.append({"doc": file.name, "chunk": chunk, "chunk_id": f"{file.stem}_{i}", "chunk_url": f'https://{file.name}'})
             if embeddings_for_file:
                 if index is None:
                     dim = len(embeddings_for_file[0])
