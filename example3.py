@@ -17,6 +17,8 @@ from models import AddInput, AddOutput, SqrtInput, SqrtOutput, StringsToIntsInpu
 from PIL import Image as PILImage
 from tqdm import tqdm
 import hashlib
+from newspaper import Article
+from history_fetch import main as history_fetch
 
 
 mcp = FastMCP("Calculator")
@@ -26,6 +28,24 @@ EMBED_MODEL = "nomic-embed-text"
 CHUNK_SIZE = 256
 CHUNK_OVERLAP = 40
 ROOT = Path(__file__).parent.resolve()
+
+def html_parser_newspaper3k(url):
+    article_object = Article(url) 
+    article_object.download()   
+  
+    article_object.parse()
+    text = article_object.text
+
+    # Create documents directory if it doesn't exist
+    os.makedirs("documents", exist_ok=True)
+    
+    # Use a sanitized filename based on the URL
+    filename = url.split("/")[-1] + ".txt"
+    with open(f"documents/{filename}", "w") as f:
+        f.write(text)
+
+    return text
+    
 
 def get_embedding(text: str) -> np.ndarray:
     response = requests.post(EMBED_URL, json={"model": EMBED_MODEL, "prompt": text})
@@ -51,11 +71,11 @@ def search_documents(query: str) -> list[str]:
         index = faiss.read_index(str(ROOT / "faiss_index" / "index.bin"))
         metadata = json.loads((ROOT / "faiss_index" / "metadata.json").read_text())
         query_vec = get_embedding(query).reshape(1, -1)
-        D, I = index.search(query_vec, k=5)
+        D, I = index.search(query_vec, k=2)
         results = []
         for idx in I[0]:
             data = metadata[idx]
-            results.append(f"{data['chunk']}\n[Source: {data['doc']}, ID: {data['chunk_id']}]")
+            results.append(f"{data['chunk']}\n[Source: {data['doc']}, ID: {data['chunk_id']}], ################")
         return results
     except Exception as e:
         return [f"ERROR: Failed to search: {str(e)}"]
@@ -282,7 +302,15 @@ def ensure_faiss_ready():
 
 if __name__ == "__main__":
     print("STARTING THE SERVER AT AMAZING LOCATION")
+    # url = input("Enter the URL of the article to parse: ")
 
+    # urls = history_fetch()
+    # print(urls)
+
+    # for url_tuple in urls:
+    #     # Extract the URL string from the tuple
+    #     url = url_tuple[0]
+    #     html_parser_newspaper3k(url)
     
     
     if len(sys.argv) > 1 and sys.argv[1] == "dev":

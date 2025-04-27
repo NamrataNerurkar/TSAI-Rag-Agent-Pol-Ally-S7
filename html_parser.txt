@@ -1,0 +1,20 @@
+import beatiful_soup
+import requests
+from newspaper import Article
+
+def html_parser_beautiful_soup(url):
+
+    url = url
+    html_download = requests.get_url(url)
+    # write it to txt file!
+    soup_object = beatiful_soup(html_download.text, "html.parser")
+    return beatiful_soup.get_text()
+
+def html_parser_newspaper3k(url):
+    url = url
+    # html_download = requests.get_url(url)
+    article_object = Article(url)
+    success = article_object.download()
+    # error mesage 
+    article_object.parse() # You just call article.parse() — no need to assign it to a variable.
+    return article_object.text(), article_object.top_image

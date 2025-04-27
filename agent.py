@@ -17,7 +17,7 @@ def log(stage: str, msg: str):
     now = datetime.datetime.now().strftime("%H:%M:%S")
     print(f"[{now}] [{stage}] {msg}")
 
-max_steps = 3
+max_steps = 5
 
 async def main(user_input: str):
     try:
@@ -27,7 +27,7 @@ async def main(user_input: str):
         server_params = StdioServerParameters(
             command="python",
             args=["example3.py"],
-            cwd="I:/TSAI/2025/EAG/Session 7/S7"
+            # cwd="I:/TSAI/2025/EAG/Session 7/S7"
         )
 
         try:
